@@ -2,13 +2,13 @@ from django.shortcuts import render
 from . import http_decorator
 import sys
 
-sys.path.insert(1, 'M:/Django/sheetuploader/sheetuploader/UploadPrograms')
+sys.path.insert(1, 'M:/Django Project/sheetuploader/sheetuploader/UploadPrograms')
 import bandq
 import homebase
 import hornbach_beta
 import jtf
 import shopdirect
-sys.path.insert(1, 'M:/Django/sheetuploader/sheetuploader/DeliveryStatus')
+sys.path.insert(1, 'M:/Django Project/sheetuploader/sheetuploader/DeliveryStatus')
 import checkstatus
 
 # Create your views here.
