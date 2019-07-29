@@ -1,2 +1,3 @@
 *.json
 *.pickle
+sheetuploader/sheetuploader/settings\.py

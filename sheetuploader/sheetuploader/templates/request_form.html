@@ -7,3 +7,11 @@
 <input type="submit" name="hornbach" value="Hornbach" />
 <input type="submit" name="shopdirect" value="Shop Direct" />
 </form>
+<br>
+<form method="POST" action="/search/">
+<h1>Search Consignment(s) Delivery Status</h1>
+{% csrf_token %}
+<input type="text" name="textfield" placeholder="Post Code">
+<button type="submit">Search</button>
+<p style="font-size:120%;">Multiple Postcodes separated by comma AND space eg. "RH2 4AF, BA2 3GP"</p>
+</form>

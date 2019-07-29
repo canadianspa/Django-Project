@@ -15,12 +15,13 @@ def print_http_response(f):
         sys.stdout = printed
         f(*args, **kwargs)
         sys.stdout = sys.__stdout__
-        
+
         return HttpResponse(
             [
-                '<h1>' + c + '</h1>'
+                c
                 for c in printed.content
             ]
         )
+            
 
     return new_f

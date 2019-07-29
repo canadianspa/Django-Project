@@ -49,7 +49,7 @@ def main():
 
     try:
         orders = requests.get(url, headers=headers).json() #Veeqo json
-        print('Downloaded veeqo json script.')
+        print('<p>Downloaded veeqo json script.</p>')
     
         # Find last row containing data
         result = service.spreadsheets().values().get(
@@ -112,11 +112,11 @@ def main():
                 print('Error appending values')
             
             if order['status'] == 'cancelled':
-                print('Cancelled order ' + order['number'] + ' not uploaded')
+                print('<p>Cancelled order ' + order['number'] + ' not uploaded</p>')
                 del values[-1]
             
             else:
-                print('Order ' + order['number']+ ' uploaded.')
+                print('<p>Order ' + order['number']+ ' uploaded.</p>')
                 
     if values:
         # Appending to sheets
@@ -138,7 +138,7 @@ def main():
             print('Error uploading to sheets')
     
     else:
-        print('No orders uploaded :(')
+        print('<p>No orders uploaded :(</p>')
 
 if __name__ == '__main__':
     main()
