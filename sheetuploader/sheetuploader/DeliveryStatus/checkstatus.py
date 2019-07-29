@@ -52,7 +52,7 @@ def main(postcodes):
             i += load_account(s, xdp_b, postcodes)
             i += load_account(s, xdp_c, postcodes)
             if i == 0:
-                print('<tr><td>No Consignments found</td></tr>')
+                print('<tr><td style="text-align:center">No Consignments found</td></tr>')
                 
         except:
             print('<h1> Error Loading Orders </h1>')
