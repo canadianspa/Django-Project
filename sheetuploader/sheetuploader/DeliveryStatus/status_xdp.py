@@ -28,7 +28,6 @@ def main(postcodes):
     login_url = 'https://auth.xdp.co.uk/index.php?p=login' 
     
     with requests.Session() as s:
-        
         try:
             post = s.post(login_url, data=payload)
         except:
@@ -47,36 +46,40 @@ def load_account(s, consign_url, postcodes):
         soup = BSoup(resp.content, 'html.parser')
         
         for consignment in soup.find_all('div', class_="datablock"):
-            consign_data = []
+            consignment_data = []
             
             for data in consignment.find_all('td'):
-                consign_data.append(data.text)
+                consignment_data.append(data.text)
             
             for postcode in postcodes:
-                if postcode in consign_data:
-                    try:
-                        consign_data[0] = re.sub(r'\r\n ','', consign_data[0])
-                        consign_data[10] = re.sub(r'\r\n ','', consign_data[10])
-                        consign_data[10] = re.sub('DELIVERED','DELIVERED ', consign_data[10])
+                if postcode in consignment_data:
+                    print_html(consignment_data, consignment)
 
-                        for con_id in consignment.find_all('a', href=True):
-                            href_element = '<a href="' + 'http://aws1.xsys.xdp.co.uk/' + con_id.get('href') + '">'
                     
-                        if consign_data[10] == ' --  ':
-                            consign_data[10] = 'AWAITING DELIVERY'
+def print_html(consignment_data, consignment):
+    try:
+        consignment_data[0] = re.sub(r'\r\n ','', consignment_data[0])
+        consignment_data[10] = re.sub(r'\r\n ','', consignment_data[10])
+        consignment_data[10] = re.sub('DELIVERED','DELIVERED ', consignment_data[10])
+
+        for con_id in consignment.find_all('a', href=True):
+            href_element = '<a href="' + 'http://aws1.xsys.xdp.co.uk/' + con_id.get('href') + '">'
+                        
+        if consignment_data[10] == ' --  ':
+            consignment_data[10] = 'NEW CONSIGNMENT OR AT DEPOT'
                     
-                        print('<tr>'
-                            '<td style="text-align:center">' + consign_data[0] + '</td>'
-                            '<td style="text-align:center">XDP</td>'
-                            '<td style="text-align:center">' + consign_data[1] + '</td>'
-                            '<td style="text-align:center">' + href_element + consign_data[2] + '</a></td>'
-                            '<td style="text-align:center">' + consign_data[3] + '</td>'
-                            '<td style="text-align:center">' + consign_data[5] + '</td>'
-                            '<td style="text-align:center">' + consign_data[10] + '</td>'
-                            '</tr>'
-                        )
-                    except:
-                        print('Error collecting consignment data')
+        print('<tr>'
+            '<td style="text-align:center">' + consignment_data[0] + '</td>'
+            '<td style="text-align:center">XDP</td>'
+            '<td style="text-align:center">' + consignment_data[1] + '</td>'
+            '<td style="text-align:center">' + href_element + consignment_data[2] + '</a></td>'
+            '<td style="text-align:center">' + consignment_data[3] + '</td>'
+            '<td style="text-align:center">' + consignment_data[5] + '</td>'
+            '<td style="text-align:center">' + consignment_data[10] + '</td>'
+            '</tr>'
+        )
+    except:
+        print('Error collecting consignment data')
         
 if __name__ == '__main__':
     main()

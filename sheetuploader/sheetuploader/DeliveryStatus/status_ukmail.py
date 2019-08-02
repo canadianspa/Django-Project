@@ -26,10 +26,12 @@ def main(postcodes):
           'txtUsername' : ukmail_login['Username'],
           'txtPassword' : ukmail_login['Password']
         }
-        
-        r = s.post(login_url, data=payload)
 
-        j = 0
+        try:
+            r = s.post(login_url, data=payload)
+        except:
+            print('Error logging in')
+        
         order_data = []
         
         for i in range(20):
@@ -41,12 +43,12 @@ def main(postcodes):
             
             for consignment in consignment_list.find_all('tr'):
                 data = ''
-                for consignment_data in consignment.find_all('td'):
-                    data += consignment_data.text + '|'
+                for consignment_td in consignment.find_all('td'):
+                    data += consignment_td.text + '|'
                 
                 order_data.append(data)
                 
-    consign_data = []
+    consignment_data = []
     consignment_numbers = []
     
     for consignment in order_data:
@@ -55,15 +57,15 @@ def main(postcodes):
         for postcode in postcodes:
             try:
                 if postcode in check_data[9]:
-                    consign_data.append(consignment)
+                    consignment_data.append(consignment)
                     consignment_numbers.append(check_data[6])
             except:
-                skip = []
-
-    statuses = get_status(consignment_numbers)
-    
-    for consign_str, status in zip(consign_data, statuses):
-        print_html(consignment, status)
+                skip = 'Skipping non-order <td> element at start of each table'
+                
+    if consignment_data:
+        statuses = get_status(consignment_numbers)
+        for consign_str, status in zip(consignment_data, statuses):
+            print_html(consign_str, status)
 
 
 def get_status(consignment_numbers):
@@ -93,13 +95,13 @@ def get_status(consignment_numbers):
 
 def  print_html(consign_str, status):
     consign_data = consign_str.split('|')
-    
-    #if 'is' in status:
-      #  status.replace('Your parcel ' + consignment_no + ' is ', '', new=0)
-    #elif 'has' in status:
-     #   status.replace('Your parcel ' + consignment_no + ' has been ', '', new=0)
-    #else:
-        #status.replace('Your parcel ' + consignment_no + ' ', '', new=0)
+
+    try:
+        status = status.replace('Your parcel ' + consign_data[6], '')
+        status = status.replace(' is ', '')
+        status = status.replace(' has been ', '')
+    except:
+        print('Error shortening status')
     
     try:
         print('<tr>'
