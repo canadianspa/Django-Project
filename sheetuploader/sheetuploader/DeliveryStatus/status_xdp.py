@@ -26,45 +26,26 @@ def main(postcodes):
     xdp_c = 'http://aws1.xsys.xdp.co.uk/index.php?from=%s&to=%s&dateSearch=manifestDate&caccno=2A479C&consigNo=&refs=&deliveryPostcode=&pcType=del&p=search-customer&' % (lastmonth, now.strftime("%Y-%m-%d"))
     
     login_url = 'https://auth.xdp.co.uk/index.php?p=login' 
-
-    print('''
-            <table style="width:70%" align="left">
-            <tr>
-            <th>Date</th>
-            <th>Account No</th>
-            <th>Consignment</th>
-            <th>Customer Ref</th>
-            <th>Post Code</th>
-            <th>Delivery Status</th>
-            </tr>
-            '''
-          )
-    
     
     with requests.Session() as s:
+        
         try:
             post = s.post(login_url, data=payload)
         except:
-            print('<h1> Error Logging In </h1>')
+            print('Error Logging In')
         
         try:
-            i = load_account(s, xdp_a, postcodes)
-            i += load_account(s, xdp_b, postcodes)
-            i += load_account(s, xdp_c, postcodes)
-            if i == 0:
-                print('<tr><td style="text-align:center">No Consignments found</td></tr>')
-                
+            load_account(s, xdp_a, postcodes)
+            load_account(s, xdp_b, postcodes)
+            load_account(s, xdp_c, postcodes)
         except:
-            print('<h1> Error Loading Orders </h1>')
-    
-    print('</table>')
+            print('Error Loading Orders')
+            
 
 def load_account(s, consign_url, postcodes):
         resp = s.get(consign_url)
         soup = BSoup(resp.content, 'html.parser')
-
-        i = 0
-        consignments = []
+        
         for consignment in soup.find_all('div', class_="datablock"):
             consign_data = []
             
@@ -73,30 +54,29 @@ def load_account(s, consign_url, postcodes):
             
             for postcode in postcodes:
                 if postcode in consign_data:
-                    consign_data[0] = re.sub(r'\r\n ','', consign_data[0])
-                    consign_data[10] = re.sub(r'\r\n ','', consign_data[10])
-                    consign_data[10] = re.sub('DELIVERED','DELIVERED ', consign_data[10])
+                    try:
+                        consign_data[0] = re.sub(r'\r\n ','', consign_data[0])
+                        consign_data[10] = re.sub(r'\r\n ','', consign_data[10])
+                        consign_data[10] = re.sub('DELIVERED','DELIVERED ', consign_data[10])
 
-                    for con_id in consignment.find_all('a', href=True):
-                        href_element = '<a href="' + 'http://aws1.xsys.xdp.co.uk/' + con_id.get('href') + '">'
+                        for con_id in consignment.find_all('a', href=True):
+                            href_element = '<a href="' + 'http://aws1.xsys.xdp.co.uk/' + con_id.get('href') + '">'
                     
-                    if consign_data[10] == ' --  ':
-                        consign_data[10] = 'AWAITING DELIVERY'
+                        if consign_data[10] == ' --  ':
+                            consign_data[10] = 'AWAITING DELIVERY'
                     
-                    print('<tr>'
+                        print('<tr>'
                             '<td style="text-align:center">' + consign_data[0] + '</td>'
+                            '<td style="text-align:center">XDP</td>'
                             '<td style="text-align:center">' + consign_data[1] + '</td>'
                             '<td style="text-align:center">' + href_element + consign_data[2] + '</a></td>'
                             '<td style="text-align:center">' + consign_data[3] + '</td>'
                             '<td style="text-align:center">' + consign_data[5] + '</td>'
                             '<td style="text-align:center">' + consign_data[10] + '</td>'
                             '</tr>'
-                          )
-                    
-                    i += 1
-
-        return i
-                
+                        )
+                    except:
+                        print('Error collecting consignment data')
         
 if __name__ == '__main__':
     main()

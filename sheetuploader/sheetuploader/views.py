@@ -9,7 +9,8 @@ import hornbach_beta
 import jtf
 import shopdirect
 sys.path.insert(1, 'M:/Django Project/sheetuploader/sheetuploader/DeliveryStatus')
-import checkstatus
+import status_xdp
+import status_ukmail
 
 # Create your views here.
 def index(request):
@@ -40,6 +41,26 @@ def upload(request):
 @http_decorator.print_http_response     
 def search(request):
     if request.method == "POST":
+        # FORMS TABLE
+        print('''
+            <table style="width:60%" align="left">
+            <tr>
+            <th>Date</th>
+            <th>Delivery Company</th>
+            <th>Account No</th>
+            <th>Consignment</th>
+            <th>Customer Ref</th>
+            <th>Post Code</th>
+            <th>Delivery Status</th>
+            </tr>
+            '''
+        )
+
+        # INPUT TO TABLE AFTER
+
         postcodes = request.POST.get("textfield", None).split(', ')
-        checkstatus.main(postcodes)
-    
+        status_xdp.main(postcodes)
+        status_ukmail.main(postcodes)
+        
+        # INPUT TO TABLE BEFORE
+        print('</table>')
