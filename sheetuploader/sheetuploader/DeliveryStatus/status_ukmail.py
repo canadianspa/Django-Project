@@ -34,7 +34,7 @@ def main(postcodes):
         
         order_data = []
         
-        for i in range(20):
+        for i in range(40):
             consignments_url = 'https://iconsign.ukmail.com/iconsignv5/FindConsignments.aspx?pn=%d&sb=[Customer+ref]&st=' % (i + 1)
             resp = s.get(consignments_url)
 
