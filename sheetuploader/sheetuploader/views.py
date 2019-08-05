@@ -8,6 +8,9 @@ import homebase
 import hornbach_beta
 import jtf
 import shopdirect
+import wayfair
+import therange
+import travisperkins
 sys.path.insert(1, 'M:/Django Project/sheetuploader/sheetuploader/DeliveryStatus')
 import status_xdp
 import status_ukmail
@@ -29,9 +32,18 @@ def upload(request):
         elif 'hornbach' in request.POST:
             print('<h1>Hornbach Updater:</h1>')
             hornbach_beta.main()
+        elif 'wayfair' in request.POST:
+            print('<h1>Wayfair Updater:</h1>')
+            wayfair.main()
         elif 'jtf' in request.POST:
             print('<h1>JTF Updater:</h1>')
             jtf.main()
+        elif 'therange' in request.POST:
+            print('<h1>Range Updater:</h1>')
+            therange.main()
+        elif 'travisperkins' in request.POST:
+            print('<h1>Travis Perkins Updater:</h1>')
+            travisperkins.main()
         elif 'shopdirect' in request.POST:
             print('<h1>Shopdirect Updater:</h1>')
             shopdirect.main()
