@@ -21,11 +21,11 @@ def main(postcodes):
     else:
         lastmonth = str(now.year) + '-' + str(now.month - 1) + '-' + str(now.day)
     
+    login_url = 'https://auth.xdp.co.uk/index.php?p=login'
+    
     xdp_a = 'http://aws1.xsys.xdp.co.uk/index.php?from=%s&to=%s&dateSearch=manifestDate&caccno=2A479A&consigNo=&refs=&deliveryPostcode=&pcType=del&p=search-customer&' % (lastmonth, now.strftime("%Y-%m-%d"))
     xdp_b = 'http://aws1.xsys.xdp.co.uk/index.php?from=%s&to=%s&dateSearch=manifestDate&caccno=2A479B&consigNo=&refs=&deliveryPostcode=&pcType=del&p=search-customer&' % (lastmonth, now.strftime("%Y-%m-%d"))
     xdp_c = 'http://aws1.xsys.xdp.co.uk/index.php?from=%s&to=%s&dateSearch=manifestDate&caccno=2A479C&consigNo=&refs=&deliveryPostcode=&pcType=del&p=search-customer&' % (lastmonth, now.strftime("%Y-%m-%d"))
-    
-    login_url = 'https://auth.xdp.co.uk/index.php?p=login' 
     
     with requests.Session() as s:
         try:
@@ -58,14 +58,12 @@ def load_account(s, consign_url, postcodes):
                     
 def print_html(consignment_data, consignment):
     try:
-        consignment_data[0] = re.sub(r'\r\n ','', consignment_data[0])
-        consignment_data[10] = re.sub(r'\r\n ','', consignment_data[10])
         consignment_data[10] = re.sub('DELIVERED','DELIVERED ', consignment_data[10])
 
         for con_id in consignment.find_all('a', href=True):
-            href_element = '<a href="' + 'http://aws1.xsys.xdp.co.uk/' + con_id.get('href') + '">'
+            href_element = '<a href="http://aws1.xsys.xdp.co.uk/' + con_id.get('href') + '">'
                         
-        if consignment_data[10] == ' --  ':
+        if '--' in consignment_data[10]:
             consignment_data[10] = 'NEW CONSIGNMENT OR AT DEPOT'
                     
         print('<tr>'

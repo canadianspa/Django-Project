@@ -59,9 +59,6 @@ def main(postcodes):
         for consignment in consignment_data:
             status = get_status(consignment[6])
             print_html(consignment, status)
-            
-    else:
-        print('No UK Mail Orders Found')
 
 def get_status(consignment_number):
     url = 'https://track.dhlparcel.co.uk/?con=' + consignment_number + '&nav=1'
