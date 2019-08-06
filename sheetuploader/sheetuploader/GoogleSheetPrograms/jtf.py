@@ -12,14 +12,14 @@ import json
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
-spreadsheet_id = '1qeNHHjKFi9b-XZBaQ_zzgxdprKvBiAm1rhXwJrwPokw'
+spreadsheet_id = '1AFSYTWD79LZdGrpwbkUF5sZVTDvP4eYf838xffw-geQ'
 
 def main():
     creds = None
-    
-    apikey_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "UploadPrograms\\apikey.json")
-    credentials_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "UploadPrograms\\credentials.json")
-    token_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "UploadPrograms\\token.pickle")
+        
+    apikey_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "GoogleSheetPrograms\\apikey.json")
+    credentials_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "GoogleSheetPrograms\\credentials.json")
+    token_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "GoogleSheetPrograms\\token.pickle")
     
     with open(apikey_path) as api_key:    
         headers = json.load(api_key)
@@ -40,39 +40,47 @@ def main():
         # Save the credentials for the next run
         with open(token_path, 'wb') as token:
             pickle.dump(creds, token)
-    
+
     service = build('sheets', 'v4', credentials=creds)
-    
+
     # Forms orders.json of orders today
     now = datetime.now()
-    url = 'https://api.veeqo.com/orders?created_at_min=%s&page_size=100' % now.strftime("%Y-%m-%d")
-    
+    url = ('https://api.veeqo.com/orders?created_at_min=%s&page_size=100' % now.strftime("%Y-%m-%d"))
+
     try:
         orders = requests.get(url, headers=headers).json() #Veeqo json
         print('<p>Downloaded veeqo json script.</p>')
-        
+
         # Find last row containing data
         result = service.spreadsheets().values().get(
             spreadsheetId=spreadsheet_id,
-            range='Sheet1!E:E').execute()
+            range='C559 - JTF Wholesale!D:D').execute()
 
     except:
         print('Error downloading Veeqo/Google Script')
-    
+        
     existing_orders = result.get('values', [])
     order_num = re.findall(r'\d+', str(existing_orders))
-    
+
     values = []
     
     for order in orders:
-        if (order['channel']['id'] == 55175
+        if (order['channel']['id']==54699
             and str(order['id']) not in order_num):
+            
             # items list to store items from order
-            items = ''
+            items = ['','','']
             i = 0
             for sellable in order['line_items']:
-                items += sellable['sellable']['product_title'].upper()       
-            
+                if i > 2:
+                    # Append items in orders of more than 3 products to items[2]
+                    items[2] = items[2] + ' & ' + sellable['sellable']['product_title'].upper()
+                    i+=1
+                    
+                else:
+                    items[i] = sellable['sellable']['product_title'].upper()
+                    i+=1            
+
             customer_info = order['deliver_to']
             order_date = re.findall('\d+', str(order['created_at']))
 
@@ -80,30 +88,32 @@ def main():
             note_nums = re.findall('\d+', str(order['customer_note']['text']))
             if note_nums:
                 for num in note_nums:
-                    if len(num) == 9:
+                    if len(num) == 7:
                         po_num = num
-                    
-            # Creates values list for spreadsheet input data
+               
+            customer_info = order['deliver_to']
+            order_date = re.findall(r'\d+', str(order['created_at']))
             try:
+                # Creates values list for spreadsheet input data
                 values.append (
-                    [order['total_price'],
-                    '','',
-                    po_num,
+                    ['','',
+                    order['total_price'],
                     order['number'],
+                    po_num,
+                    '','','',
                     order_date[2]+'/'+order_date[1]+'/'+order_date[0],
-                    '','',
+                    '',
+                    items[0],items[1],items[2],
                     customer_info['first_name'].upper(),
                     customer_info['last_name'].upper(),
-                    customer_info['address1'].upper(),
                     customer_info['zip'].upper(),
-                    '','',
-                    items,
-                    '',
+                    customer_info['address1'].upper(),
                     order['subtotal_price']
                     ])
+
             except:
                 print('Error appending values')
-                
+
             if order['status'] == 'cancelled':
                 print('<p>Cancelled order ' + order['number'] + ' not uploaded</p>')
                 del values[-1]
@@ -111,29 +121,26 @@ def main():
             else:
                 print('<p>Order ' + order['number']+ ' uploaded.</p>')
 
-    
-    if values:
+    if values:       
         # Appending to sheets
         body = {
             'values': values
         }
-    
-        range_str = 'Sheet1!A'+str(len(existing_orders) + 1)+':V'
+            
+        range_str = 'C559 - JTF Wholesale!A'+str(len(existing_orders) + 1)+':V'
         value_input_option = 'RAW'
-        
+
         try:
             result = service.spreadsheets().values().update(
                 spreadsheetId=spreadsheet_id,
-                range=range_str, # Append order to next row 
+                range=range_str, # Append order to next row
                 valueInputOption=value_input_option,
                 body=body).execute()
-
         except:
             print('Error uploading to sheets')
-        
+    
     else:
         print('<p>No orders uploaded :(</p>')
 
 if __name__ == '__main__':
     main()
-

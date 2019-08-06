@@ -12,14 +12,14 @@ import json
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
-spreadsheet_id = '1Smo5GYQ1BIbiLS3AQczz9UzotLEKEFPdScdRfPMMqgo'
+spreadsheet_id = '1gZ6JukEPpQkt9sdEyemlzXFawXxUQssr2WWemlLm2U4'
 
 def main():
     creds = None
         
-    apikey_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "UploadPrograms\\apikey.json")
-    credentials_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "UploadPrograms\\credentials.json")
-    token_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "UploadPrograms\\token.pickle")
+    apikey_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "GoogleSheetPrograms\\apikey.json")
+    credentials_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "GoogleSheetPrograms\\credentials.json")
+    token_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "GoogleSheetPrograms\\token.pickle")
     
     with open(apikey_path) as api_key:    
         headers = json.load(api_key)
@@ -50,28 +50,24 @@ def main():
     try:
         orders = requests.get(url, headers=headers).json() #Veeqo json
         print('<p>Downloaded veeqo json script.</p>')
-
+    
         # Find last row containing data
         result = service.spreadsheets().values().get(
             spreadsheetId=spreadsheet_id,
-            range='Sheet1!C:C').execute()
+            range='Statement!F:F').execute()
 
     except:
         print('Error downloading Veeqo/Google Script')
+        
     existing_orders = result.get('values', [])
     order_num = re.findall(r'\d+', str(existing_orders))
-        
+    
     values = []
     
     for order in orders:
-        try:
-            firstname = order['customer']['billing_address']['first_name'].upper()
-        except error:
-            firstname = 'No Address'
-            
-        if ('HORNBACH' in firstname
+        if (order['channel']['id']==46687
             and str(order['id']) not in order_num):
-            
+                        
             # items list to store items from order
             items = ['','','']
             i = 0
@@ -85,59 +81,61 @@ def main():
                     items[i] = sellable['sellable']['product_title'].upper()
                     i+=1
             
-            customer_info = order['deliver_to']
-            order_date = re.findall(r'\d+', str(order['created_at']))
 
-            po_number = ''
+            customer_info = order['deliver_to']
+            order_date = re.findall('\d+', str(order['created_at']))
+            
+            po_num = ''
             note_nums = re.findall('\d+', str(order['customer_note']['text']))
             if note_nums:
                 for num in note_nums:
                     if len(num) == 10:
-                        po_number = num
-                        
+                        po_num = num
+                        break
+
             try:
                 # Creates values list for spreadsheet input data
                 values.append (
-                    [order_date[2]+'/'+order_date[1]+'/'+order_date[0],
-                    '',
+                    ['',
+                    order_date[2]+'/'+order_date[1]+'/'+order_date[0],
+                    '','','',
                     order['number'],
-                    po_number,
-                    customer_info['first_name'] + ' ' + customer_info['last_name'],
-                    customer_info['address1'],
-                    items[0] + ' ' + items[1] + ' ' + items[2],
+                    po_num,
                     '','',
-                    order['subtotal_price'],
-                    '',
-                    order['total_price']
+                    order['total_price'],
+                    items[0],items[1],items[2],
+                    customer_info['first_name'].upper(),
+                    customer_info['last_name'].upper(),
+                    customer_info['zip'].upper(),        
                     ])
             except:
                 print('Error appending values')
-                        
+            
             if order['status'] == 'cancelled':
                 print('<p>Cancelled order ' + order['number'] + ' not uploaded</p>')
                 del values[-1]
             
             else:
                 print('<p>Order ' + order['number']+ ' uploaded.</p>')
-
-            
+                
     if values:
         # Appending to sheets
         body = {
             'values': values
         }
-            
-        range_str = 'Sheet1!A' + str(len(existing_orders) + 1) + ':V'
+    
+        range_str = 'Statement!A' + str(len(existing_orders) + 1) + ':V'
         value_input_option = 'RAW'
 
-        try:  
+        try:
             result = service.spreadsheets().values().update(
                 spreadsheetId=spreadsheet_id,
                 range=range_str, # Append order to next row
                 valueInputOption=value_input_option,
                 body=body).execute()
+
         except:
-            print('Error appending values')
+            print('Error uploading to sheets')
     
     else:
         print('<p>No orders uploaded :(</p>')

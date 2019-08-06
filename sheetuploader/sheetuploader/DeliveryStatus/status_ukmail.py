@@ -3,8 +3,6 @@ import json
 import re
 import os
 from bs4 import BeautifulSoup as BSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 
 def main(postcodes):
     uklogin_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "DeliveryStatus/ukmail_login.json")
@@ -32,72 +30,50 @@ def main(postcodes):
         except:
             print('Error logging in')
         
-        order_data = []
+        consignment_data = []
         
-        for i in range(20):
-            consignments_url = 'https://iconsign.ukmail.com/iconsignv5/FindConsignments.aspx?pn=%d&sb=[Customer+ref]&st=' % (i + 1)
+        for i in range(30):
+            consignments_url = 'https://iconsign.ukmail.com/iconsignv5/FindConsignments.aspx?pn=%d' % (i + 1)
             resp = s.get(consignments_url)
 
             soup = BSoup(resp.content, 'html.parser')
             consignment_list = soup.find('table', id='ctl00_mainContent_consignmentGridView')
             
             for consignment in consignment_list.find_all('tr'):
-                data = ''
+                data = []
+                
                 for consignment_td in consignment.find_all('td'):
-                    data += consignment_td.text + '|'
-                
-                order_data.append(data)
-                
-    consignment_data = []
-    consignment_numbers = []
+                    data.append(consignment_td.text)
+
+                for postcode in postcodes:
+                    try:
+                        if postcode in data:
+                            consignment_data.append(data)
+                    except:
+                        skip = 'Skipping non-order <td> element at start of each table'
+
+            if len(consignment_data) == len(postcodes):
+                break
     
-    for consignment in order_data:
-        check_data = consignment.split('|')
-            
-        for postcode in postcodes:
-            try:
-                if postcode in check_data[9]:
-                    consignment_data.append(consignment)
-                    consignment_numbers.append(check_data[6])
-            except:
-                skip = 'Skipping non-order <td> element at start of each table'
-                
     if consignment_data:
-        statuses = get_status(consignment_numbers)
-        for consign_str, status in zip(consignment_data, statuses):
-            print_html(consign_str, status)
+        for consignment in consignment_data:
+            status = get_status(consignment[6])
+            print_html(consignment, status)
             
     else:
         print('No UK Mail Orders Found')
 
-
-def get_status(consignment_numbers):
-    options = webdriver.ChromeOptions()
-    options.add_argument("--headless") # Runs Chrome in headless mode.
-    options.add_argument('--disable-gpu')
-    options.add_argument('--ignore-certificate-errors')
-    options.add_argument("--test-type")
-    options.add_argument("--versions.chrome")
-    
-    driver = webdriver.Chrome('M:\chromedriver', options=options)
-    
-    statuses= []
-    for consignment_no in consignment_numbers:
-        driver.get('https://track.dhlparcel.co.uk/')
-        driver.find_element_by_id('LO_01_txtConsignmentNo').send_keys(consignment_no)
-        driver.find_element_by_id('LO_01_btnSearch').click()
+def get_status(consignment_number):
+    url = 'https://track.dhlparcel.co.uk/?con=' + consignment_number + '&nav=1'
+    resp = requests.get(url)
         
-        soup = BSoup(driver.page_source, 'html.parser')
-        consignment_status = soup.find_all('h3')[1].text
-        statuses.append(consignment_status)
-    
-    driver.quit()
-    
-    return statuses
+    soup = BSoup(resp.content, 'html.parser')
+    status = soup.find_all('h3')[1].text
+
+    return status
 
 
-def  print_html(consign_str, status):
-    consign_data = consign_str.split('|')
+def  print_html(consign_data, status):
 
     try:
         status = status.replace('Your parcel ' + consign_data[6], '')

@@ -16,9 +16,9 @@ spreadsheet_id = '1umWNEdhu2Snc61VXVqcFMWUDDb0F-fEBlGQoVInwSkg'
 def main():
     creds = None
     
-    apikey_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "UploadPrograms\\apikey.json")
-    credentials_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "UploadPrograms\\credentials.json")
-    token_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "UploadPrograms\\token.pickle")
+    apikey_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "GoogleSheetPrograms\\apikey.json")
+    credentials_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "GoogleSheetPrograms\\credentials.json")
+    token_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "GoogleSheetPrograms\\token.pickle")
     
     with open(apikey_path) as api_key:    
         headers = json.load(api_key)
@@ -68,6 +68,12 @@ def main():
             range='504161 DSV (GSX tradeweb)!C97:C').execute()
 
         prices = result_price.get('values', [])
+
+        result_podate = service.spreadsheets().values().get(
+            spreadsheetId=spreadsheet_id,
+            range='504161 DSV (GSX tradeweb)!I97:I').execute()
+
+        podate = result_podate.get('values', [])
                     
     except:
         print('Error getting values')
@@ -81,16 +87,15 @@ def main():
             prices[i].append(0)
             prices[i][0] = 0
         
-        try:
-            dates[i] += ''
-        except:
-            dates.append('')
+        dates.append([])
             
         if not dates[i]:
             if (prices[i][0] > 500 and prices[i][0] != 0):
-                print(str(inv_nums[i][0]) + ' : ' + str(items[i]) + "<BR>")
+                print(podate[i][0] + ' ' + str(inv_nums[i][0]) + ' : ')
+                for item in items[i]:
+                    print(item + ', ')
 
-    
-    
+                print("<BR>")
+                    
 if __name__ == '__main__':
     main()
