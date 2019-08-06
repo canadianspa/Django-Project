@@ -44,7 +44,8 @@ def main():
     service = build('sheets', 'v4', credentials=creds)
     
     # Forms orders.json of The Range orders
-    url = 'https://api.veeqo.com/orders?tags=THE RANGE&page_size=100'
+    now = datetime.now()
+    url = 'https://api.veeqo.com/orders?created_at_min=%s&page_size=100' % now.strftime("%Y-%m-%d")
     
     try:
         orders = requests.get(url, headers=headers).json() #Veeqo json
@@ -64,7 +65,8 @@ def main():
     values = []
     
     for order in orders:
-        if str(order['id']) not in order_num:
+        if (order['channel']['id'] == 55732
+            and str(order['id']) not in order_num):
             
             # items list to store items from order
             items = ['','','']
