@@ -34,7 +34,7 @@ def main(postcodes):
         
         order_data = []
         
-        for i in range(40):
+        for i in range(20):
             consignments_url = 'https://iconsign.ukmail.com/iconsignv5/FindConsignments.aspx?pn=%d&sb=[Customer+ref]&st=' % (i + 1)
             resp = s.get(consignments_url)
 
@@ -66,6 +66,9 @@ def main(postcodes):
         statuses = get_status(consignment_numbers)
         for consign_str, status in zip(consignment_data, statuses):
             print_html(consign_str, status)
+            
+    else:
+        print('No UK Mail Orders Found')
 
 
 def get_status(consignment_numbers):
