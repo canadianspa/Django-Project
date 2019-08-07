@@ -65,7 +65,13 @@ def main():
     values = []
     
     for order in orders:
-        if (order['channel']['id'] == 55732
+        the_range = 0
+        for tag in order['tags']:
+            if '342955' in str(tag['id']):
+                the_range = 1
+                break
+        
+        if ((order['channel']['id'] == 55732 or the_range)
             and str(order['id']) not in order_num):
             
             # items list to store items from order
