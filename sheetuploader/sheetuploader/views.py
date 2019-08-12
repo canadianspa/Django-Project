@@ -12,6 +12,7 @@ import wayfair
 import therange
 import travisperkins
 import order_well
+import Turnover_between_date
 sys.path.insert(1, 'M:/Django Project/sheetuploader/sheetuploader/DeliveryStatus')
 import status_xdp
 import status_ukmail
@@ -48,9 +49,6 @@ def upload(request):
         elif 'shopdirect' in request.POST:
             print('<h1>Shopdirect Updater:</h1>')
             shopdirect.main()
-        elif 'orderwell' in request.POST:
-            print('<h1>Orders:</h1>')
-            order_well.main()
         else:
             print('Error loading functions')
 
@@ -80,3 +78,15 @@ def search(request):
         
         # INPUT TO TABLE BEFORE
         print('</table>')
+
+@http_decorator.print_http_response     
+def xavier(request):
+    if request.method == "POST":
+        if 'orderwell' in request.POST:
+            print('<h1>Orders:</h1>')
+            order_well.main()
+
+        else:
+            print('<h1>Turnover:</h1>')
+            search_date = request.POST.get("textfield", None).split(', ')
+            Turnover_between_date.main(search_date[0])
