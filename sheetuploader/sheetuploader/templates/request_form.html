@@ -1,3 +1,10 @@
+{% load staticfiles %}
+<head>
+<link rel="shortcut icon" type='image/x-icon' href="{%  static 'favicon_background.png' %}">
+</head>
+
+<img style="width:100px; height:100px;" src="{% static 'canspalogo.png' %}" alt='Logo'</src>
+
 <form method="POST" action="/upload/">
 {% csrf_token %}
 <h1>Select Orders to Upload:</h1>
@@ -14,10 +21,12 @@
 <form method="POST" action="/xavier/">
 {% csrf_token %}
 <h1>Xavier's Programs</h1>
-<input type="submit" name="orderwell" value="Calculate Order Well for B&Q" />
-<BR><BR>
+<input type="submit" name="orderwell" value="Order Well for B&Q" />
+<BR>
+<BR>
 <input type="text" name="textfield" placeholder="MM/YYYY">
 <button type="submit">Search</button>
+<p style="font-size:120%;">Calculate turnover for given month.</p>
 </form>
 
 <form method="POST" action="/search/">
