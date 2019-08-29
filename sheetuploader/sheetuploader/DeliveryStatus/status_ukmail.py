@@ -5,6 +5,7 @@ import os
 from bs4 import BeautifulSoup as BSoup
 
 def main(postcodes):
+    
     uklogin_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "DeliveryStatus/ukmail_login.json")
     
     with open(uklogin_path) as ukmail_login:    
@@ -17,7 +18,7 @@ def main(postcodes):
         get_soup = BSoup(get_viewstate.content, 'html.parser')
         viewstate_login = get_soup.find('input', id='_VIEWSTATE_Login').get('value')
         
-        payload = {
+        login_payload = {
           '_VIEWSTATE_Login' : viewstate_login,
           '__VIEWSTATE' : '',
           'btnLogin': 'Login',
@@ -25,10 +26,7 @@ def main(postcodes):
           'txtPassword' : ukmail_login['Password']
         }
 
-        try:
-            r = s.post(login_url, data=payload)
-        except:
-            print('Error logging in')
+        r = s.post(login_url, data=login_payload)
         
         consignment_data = []
         
@@ -61,12 +59,12 @@ def main(postcodes):
             print_html(consignment, status)
 
 def get_status(consignment_number):
-    url = 'https://track.dhlparcel.co.uk/?con=' + consignment_number + '&nav=1'
-    resp = requests.get(url)
-        
+    url = 'https://track.dhlparcel.co.uk/?con=' + consignment_number
+    resp = requests.get(url, verify=False)
+    
     soup = BSoup(resp.content, 'html.parser')
     status = soup.find_all('h3')[1].text
-
+    
     return status
 
 

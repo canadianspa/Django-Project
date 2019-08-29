@@ -15,7 +15,7 @@ import order_well
 import Turnover_between_date
 sys.path.insert(1, 'M:/Django Project/sheetuploader/sheetuploader/DeliveryStatus')
 import status_xdp
-import status_ukmail
+import ukmail_v2
 
 # Create your views here.
 def index(request):
@@ -74,7 +74,7 @@ def search(request):
 
         postcodes = request.POST.get("textfield", None).split(', ')
         status_xdp.main(postcodes)
-        status_ukmail.main(postcodes)
+        ukmail_v2.main(postcodes)
         
         # INPUT TO TABLE BEFORE
         print('</table>')
