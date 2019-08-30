@@ -83,8 +83,9 @@ def main():
             customer_info = order['deliver_to']
             order_date = re.findall('\d+', str(order['created_at']))
 
+            
             try:
-                po_number = order['customer_note']['text'].split()[1]
+                po_number = re.find(r'[A-Za-z]{2}[0-9]{9}', str(order['customer_note']['text']))
             except:
                 po_number = ''
                     

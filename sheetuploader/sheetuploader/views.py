@@ -59,7 +59,7 @@ def search(request):
         print('''
             <table style="width:60%" align="left">
             <tr>
-            <th>Date</th>
+            <th>Date Collected</th>
             <th>Delivery Company</th>
             <th>Account No</th>
             <th>Consignment</th>

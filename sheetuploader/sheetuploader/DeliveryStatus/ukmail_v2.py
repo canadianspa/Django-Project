@@ -5,8 +5,6 @@ import os
 from bs4 import BeautifulSoup as BSoup
 
 def main(postcodes):
-
-    #postcodes = ['EX7 0LX']
     
     uklogin_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "DeliveryStatus/ukmail_login.json")
     
